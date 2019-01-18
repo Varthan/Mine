@@ -1,0 +1,97 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/eosjs@16.0.8/lib/eos.min.js"
+    integrity="sha512-zhPSKFEBlDVvUzjl9aBS66cI8tDYoLetynuKvIekHT8NZZ12oxwcZ//M/eT/2Rb/pR/cjFvLD8104Cy//sdEnA=="
+    crossorigin="anonymous"></script> 
+ 
+  <script>
+    var auth;
+
+    function fun(key)
+    {
+      var private_key;
+      if(key == 1)
+      {
+        auth = "chainflux123"
+        private_key = '5Htwu3g12J63VSghA8oFUrCvhtRAxj656dtqdwY3Tz2yzRjhZhE';
+      }
+        
+      else
+      {
+        auth = document.getElementById("auth").value;
+        private_key = document.getElementById("pri").value;
+      }
+        
+        
+      chain = {
+        main: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906', // main network
+        jungle: '038f4b0fc8ff18a4f0842a8f0564611f6e96e8535901dd45e43ac8691a1c4dca', // jungle testnet
+        sys: 'cf057bbfb72640471fd910bcb67639c22df9f92470936cddc1ade0e2f2e7dc4f' // local developer
+      }
+    
+      eos = Eos({
+        keyProvider: private_key,// private key
+        httpEndpoint: 'http://dev.cryptolions.io:38888',
+        chainId: chain.jungle,
+        broadcast: true,
+        debug: true, 
+        sign: true
+      });
+
+      var pubkey = Eos.modules.ecc.privateToPublic(private_key);
+      console.log(auth+"-"+pubkey);
+
+    }
+    fun(1);
+
+
+    function account()
+    {
+      var name = document.getElementById("acc").value;
+      var pub = document.getElementById("pub").value;
+
+      eos.transaction("murmursignup", myaccount => {
+
+        account_name = name+'-'+pub;
+
+      myaccount.getaccount(account_name , { authorization: [auth]})
+
+      }).then((da) => {
+        console.log(da);
+        alert("Account creaed successfully")
+      })
+    }
+
+
+    function key()
+    {
+      Eos.modules.ecc.randomKey().then((pr)=> {
+        document.getElementById("wif").value = pr;
+        pubkey = Eos.modules.ecc.privateToPublic(pr);
+        document.getElementById("pk").value = pubkey;
+      })
+    }
+
+  async function updateProducerVote(voter, proxy = '', producers = []) {
+    return eos.voteproducer(voter, proxy, producers)
+  }
+ 
+  </script> 
+</head>
+<body>
+  <center>
+    <input placeholder="Account Name" id="auth" /><br><br>
+    <input placeholder="Private key" id="pri" /><br><br>
+    <button onclick=fun(0)>Login</button>
+    <br><br><hr><br>
+    <button onclick=key()>Get Key</button><br><br>
+    <input placeholder="Private Key" id="wif" /><br><br>
+    <input placeholder="Public Key" id="pk" />
+    <br><br><hr><br>
+    <input placeholder="Account Name" id="acc" /><br><br>
+    <input placeholder="Public key" id="pub" /><br><br>
+    <button onclick=account()>Create Account</button>
+  </center>
+</body>
+</html>
