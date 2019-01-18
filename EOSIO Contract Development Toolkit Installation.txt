@@ -1,0 +1,22 @@
+EOSIO.CDT (Contract Development Toolkit) INSTALLATION
+
+wget https://github.com/eosio/eosio.cdt/releases/download/v1.4.1/eosio.cdt-1.4.1.x86_64.deb
+sudo apt install ./eosio.cdt-1.4.1.x86_64.deb
+
+
+IF ANY EROOR IN "sudo apt install ./eosio.cdt-1.4.1.x86_64.deb" USE THIS,
+sudo apt -f  install ./eosio.cdt-1.4.1.x86_64.deb
+
+RUN THIS COMMEND FOR GENERATE .wasm AND .abi FILE
+eosio-cpp -abigen hello.cpp -o hello.wasm
+
+IF YOYU GET ERROR
+ERROR: /usr/opt/eosio.cdt/1.4.1/bin/clang-7: /usr/lib/x86_64-linux-gnu/libstdc++.so.6: version `GLIBCXX_3.4.22' not found (required by /usr/opt/eosio.cdt/1.4.1/bin/clang-7)
+
+TRY THIS:
+
+sudo  apt-get install libstdc++6
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt-get update
+sudo apt-get install gcc-4.9
+sudo apt-get upgrade libstdc++6 --fix-missing
