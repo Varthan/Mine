@@ -1,0 +1,5 @@
+1. How to delete history without any trace
+        history -d $((HISTCMD-1)) && history -d NO_of_History_you_want_to_delete
+
+2. if you want to execute a command without leaving any trace.
+        history -d $((HISTCMD-1)) && type_your_command_here_and_execute
