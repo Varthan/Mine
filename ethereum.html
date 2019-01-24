@@ -1,0 +1,164 @@
+<html>
+    <head>
+        <title>Ethereum</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+        <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.36/dist/web3.min.js"></script>
+        <script src="./contract.js"></script>
+        <style>
+            .container{
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div> Hello </div>
+        </div>
+    </body>
+
+    <script>
+        
+        var priv= "Your Private Key";
+        
+        var contract_address = "0x76a5b78ec66faebca2911e9e641a72fd51c647d8"
+        var contract_abi = [
+            {
+                "constant": false,
+                "inputs": [],
+                "name": "clear",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "payable": true,
+                "stateMutability": "payable",
+                "type": "function"
+            },
+            {
+                "constant": false,
+                "inputs": [
+                    {
+                        "name": "a",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "update",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "show",
+                "outputs": [
+                    {
+                        "name": "",
+                        "type": "uint256"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ]
+        var web3 = new Web3(new Web3.providers.HttpProvider('https://ropsten.infura.io/Vr1GWcLG0XzcdrZHWMPu'));
+        var contract = new web3.eth.Contract(contract_abi, contract_address)
+        function update(input)  // payable function
+        {  
+            tx={
+                to: contract_address,
+                data:contract.methods.update(input).encodeABI(),
+                gas:550000
+            }
+            web3.eth.accounts.signTransaction(tx, priv,function(err,res){
+                if(err)
+                {
+                    alert("There is some error");
+                    return;
+                }
+                web3.eth.sendSignedTransaction( res.rawTransaction).on('transactionHash', txHash => {
+                    console.log("tx-Hash", txHash); 
+                }).on('receipt',receipt => { 
+                    // console.log("receipt", receipt)
+                    if(receipt["status"]== "0x1")
+                    {
+                        console.log("Transaction success");
+                        show();
+                    }
+                    else
+                        console.log("Transaction Failed");
+                }).catch(err =>{
+                    console.error(err);
+                });
+            });
+        }
+        function clear()  // payable function
+        {
+            tx={
+                to: contract_address,
+                data:contract.methods.clear().encodeABI(),
+                gas:550000
+            }
+            web3.eth.accounts.signTransaction(tx, priv,function(err,res){
+                if(err)
+                {
+                    alert("There is some error");
+                    return;
+                }
+                web3.eth.sendSignedTransaction( res.rawTransaction).on('transactionHash', txHash => {
+                    console.log("tx-Hash", txHash); 
+                }).on('receipt',receipt => { 
+                    // console.log("receipt", receipt)
+                    if(receipt["status"]== "0x1")
+                        console.log("Transaction success");
+                    else
+                        console.log("Transaction Failed");
+                }).catch(err =>{
+                    console.error(err);
+                });
+            });
+        }
+        function show()  // view/constant function
+        {
+            contract.methods.show().call((err, res) => console.log(res))
+        }
+    </script>
+</html>
+
+
+<!-- contract
+pragma solidity >=0.4.22 <0.6.0;
+contract test {
+    uint256 temp;
+    
+    function update(uint256 a) public returns(uint256)
+    {
+        temp = a;
+        return temp;
+    }
+    
+    function clear() public payable returns(uint256)
+    {
+        temp = 0;
+        return temp;
+    }
+    
+    function show() public view returns(uint256)
+    {
+        return temp;
+    }
+    
+}
+-->
