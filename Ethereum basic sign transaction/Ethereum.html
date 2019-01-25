@@ -94,7 +94,7 @@
 
                         <div class="form-group">
                             <input type="text" class="form-control" name="current_value" placeholder="current value" disabled style="text-align:center;">
-                            <a onclick="clear()" class="btn btn-danger" style="width: 60%">clear</a>
+                            <a onclick="clear_data()" class="btn btn-danger" style="width: 60%">clear</a>
                         </div>
                     </form>
 
@@ -176,7 +176,7 @@
         {      
             input = sent_val.input.value;
             document.getElementById('loader').style.display = "block"
-            sendTransaction(myContract.methods.update(input).encodeABI()).then(res => {
+            sendTransaction('update', input).then(res => {
                 console.log("Stus", res)
                 sent_val.input.value = ""
                 document.getElementById('loader').style.display = "none"
@@ -184,10 +184,10 @@
             })
         }
 
-        function clear()  // payable function
+        function clear_data()  // payable function
         {
             document.getElementById('loader').style.display = "block"
-            sendTransaction(myContract.methods.clear().encodeABI()).then(res => {
+            sendTransaction('clear', null).then(res => {
                 console.log("Stus", res)
                 document.getElementById('loader').style.display = "none"
                 show();
@@ -196,22 +196,10 @@
 
         function show()  // view/constant function
         {
-            if(!myContract)
-            {
-                setWeb3().then(() => {
-                    myContract.methods.show().call((err, res) => {
-                        // console.log(res)
-                        sent_val.current_value.value = res;
-                    })
-                })
-                
-            }
-            else
-            {
-                myContract.methods.show().call((err, res) => {
-                    sent_val.current_value.value = res;
-                })
-            }
+            callTransaction('show', null).then(res => {
+                // console.log(res)
+                sent_val.current_value.value = res;
+            })
         }
     </script>
 </html>

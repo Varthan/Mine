@@ -56,47 +56,72 @@ var importWeb3 = () => new Promise(function(resolve, reject) {
     resolve(Web3)
 })
 
-var setWeb3 = () => new Promise(function(resolve, reject) {
-    importWeb3().then((res) => {
-        web3 = new Web3(new Web3.providers.HttpProvider('https://ropsten.infura.io/Vr1GWcLG0XzcdrZHWMPu'));
-        myContract = new web3.eth.Contract(contract_abi, contract_address)
-        resolve(web3)
-    })
+var check_config = new Promise(function(resolve, reject) {
+    if(!myContract)
+        importWeb3().then((res) => {
+            web3 = new Web3(new Web3.providers.HttpProvider('https://ropsten.infura.io/Vr1GWcLG0XzcdrZHWMPu'));
+            myContract = new web3.eth.Contract(contract_abi, contract_address)
+            resolve(web3)
+        })
+    else
+        resolve(true)
 })
-setWeb3()
 
-var sendTransaction = (contract_method) => new Promise(function(resolve, reject) 
+var sendTransaction = (method_name, methor_arg) => new Promise(function(resolve, reject) 
 {
-    var tx={
-        to: contract_address,
-        data: contract_method,
-        gas:550000
-    }
-    console.log(tx);
+    check_config.then(res => {
+        var tx={
+            to: contract_address,
+            data: null,
+            gas:550000
+        }
+        if(methor_arg)
+            tx.data = myContract.methods[method_name](methor_arg).encodeABI()
+        else
+            tx.data = myContract.methods[method_name]().encodeABI()
 
-    web3.eth.accounts.signTransaction(tx, localStorage.getItem('privatekey'), function(err,res){
-        if(err)
-            resolve({error: true, mes: err});
+        console.log(tx);
 
-        web3.eth.sendSignedTransaction( res.rawTransaction).on('transactionHash', txHash => {
-            console.log("tx-Hash", txHash); 
-        }).on('receipt',receipt => {
-            // console.log(receipt);
-            if(receipt["status"]== "0x1")
-            {
-                console.log("Transaction Success", tx.data);
-                resolve(true);
-                // resolve({error: false, tx: txHash, receipt: receipt, mes: "Transaction Success"});
-            }
-            else
-            {
-                console.log("Transaction Failed");
-                resolve(true);
-                // resolve({error: false, tx: txHash, receipt: receipt, mes: "Transaction Failed"});
-            }
-        }).catch(err =>{
-            console.error(err);
-            resolve({error: true, mes: err});
+        web3.eth.accounts.signTransaction(tx, localStorage.getItem('privatekey'), function(err,res){
+            if(err)
+                resolve({error: true, mes: err});
+
+            web3.eth.sendSignedTransaction(res.rawTransaction).on('transactionHash', txHash => {
+                console.log("tx-Hash", txHash); 
+            }).on('receipt',receipt => {
+                // console.log(receipt);
+                if(receipt["status"]== "0x1")
+                {
+                    console.log("Transaction Success", tx.data);
+                    resolve(true);
+                    // resolve({error: false, tx: txHash, receipt: receipt, mes: "Transaction Success"});
+                }
+                else
+                {
+                    console.log("Transaction Failed");
+                    resolve(true);
+                    // resolve({error: false, tx: txHash, receipt: receipt, mes: "Transaction Failed"});
+                }
+            }).catch(err =>{
+                console.error(err);
+                resolve({error: true, mes: err});
+            });
+        });
+    });
+});
+
+
+var callTransaction = (method_name, methor_arg) => new Promise(function(resolve, reject) 
+{
+    check_config.then(res => {
+        var contract_method;
+        if(methor_arg)
+            contract_method = myContract.methods[method_name](methor_arg)
+        else
+            contract_method = myContract.methods[method_name]()
+
+        contract_method.call((err, res) => {
+            resolve(res)
         });
     });
 });
