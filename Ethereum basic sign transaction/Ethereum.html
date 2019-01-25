@@ -1,0 +1,217 @@
+<html>
+    <head>
+        <title>Ethereum</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+        <script src="./contract.js"></script>
+        <style>
+            .body_container{
+                display: none;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+            }
+
+            .body_container[style*="display: block"] {
+                display: flex !important;
+            }
+
+            /* loader */
+
+            html,body{
+                background:rgb(255, 255, 255);
+                margin:0;
+            }
+            .centered{
+                width:400px;
+                height:400px;
+                position:absolute;
+                top:50%;
+                left:50%;
+                transform:translate(-50%,-50%);
+                background:#000;
+                filter: blur(10px) contrast(20);
+            }
+            .blob-1,.blob-2{
+                width:70px;
+                height:70px;
+                position:absolute;
+                background:#fff;
+                border-radius:50%;
+                top:50%;left:50%;
+                transform:translate(-50%,-50%);
+            }
+            .blob-1{
+                left:20%;
+                animation:osc-l 2.5s ease infinite;
+            }
+            .blob-2{
+                left:80%;
+                animation:osc-r 2.5s ease infinite;
+                background:#0ff;
+            }
+            @keyframes osc-l{
+                0%{left:20%;}
+                50%{left:50%;}
+                100%{left:20%;}
+            }
+            @keyframes osc-r{
+                0%{left:80%;}
+                50%{left:50%;}
+                100%{left:80%;}
+            }
+            
+            /* loader */
+
+        </style>
+    </head>
+    <body>
+        <div class="body_container" id="logindiv">
+            <div class="card text-center">
+                <div class="card-body">
+                  <h5 style="font-size: 25">Welcome to the Ethereum DApp</h5>
+                  <form name="loginForm" autocomplete="off" style="margin-top: 45px">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="publicKey" placeholder="Enter your public key" style="text-align:center;">
+                        </div>
+                        <div class="form-group">
+                            <input type="password" class="form-control" name="privateKey" placeholder="Enter your private Key" style="text-align:center;">
+                        </div>
+                        <a onclick="login()" class="btn btn-primary" style="width: 60%">Login</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="body_container" id="contentdiv">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 style="font-size: 25">Now You are the Ethereum user</h5>
+                    <form name="sent_val" autocomplete="off" style="margin-top: 45px">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="input" placeholder="Enter value" style="text-align:center;">
+                            <a onclick="update()" class="btn btn-success" style="width: 60%">Update</a>
+                        </div>
+
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="current_value" placeholder="current value" disabled style="text-align:center;">
+                            <a onclick="clear()" class="btn btn-danger" style="width: 60%">clear</a>
+                        </div>
+                    </form>
+
+                    <form autocomplete="off" style="margin-top: 45px">
+                        <a onclick="logout()" class="btn btn-primary" style="width: 60%">Logout</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="container" id="loader" style="display: none">
+            <div class="row text-center">
+                <div class = "centered">
+                    <div class = "blob-1"></div>
+                    <div class = "blob-2"></div>
+                </div>
+            </div>
+        </div>
+    </body>
+
+    <script>
+
+        function check_login()
+        {
+            if(localStorage.getItem('privatekey'))
+            {
+                console.log('User already loged in')
+                document.getElementById('logindiv').style.display = "none"
+                document.getElementById('contentdiv').style.display = "block"
+                show()
+            }
+            else
+            {
+                console.log('User not loged in')
+                document.getElementById('logindiv').style.display = "block"
+                document.getElementById('contentdiv').style.display = "none"
+            }
+        }check_login();
+
+        function login()
+        {
+            var pub = loginForm.publicKey.value;
+            var pri = loginForm.privateKey.value;
+
+            if(pri.length == 64 || pri.length == 66)
+            {
+                if(pri.length == 64)
+                    var Acc_address = web3.eth.accounts.privateKeyToAccount('0x'+pri);
+                else
+                    var Acc_address = web3.eth.accounts.privateKeyToAccount(pri);
+
+                if(pub.split('0x').length == 2)
+                    pub = pub.split('0x')[1];
+
+                if(Acc_address.address == '0x'+pub)
+                {
+                    console.log("Login success")
+                    localStorage.setItem('privatekey', Acc_address.privateKey)
+                    localStorage.setItem('publickey', Acc_address.address)
+                    loginForm.publicKey.value = "";
+                    loginForm.privateKey.value = "";
+                    check_login()
+                }
+                else
+                    alert("PublicKey Mismatched")
+            }
+            else
+                alert("Invalid Private Key")
+        }
+
+        function logout()
+        {
+            localStorage.clear()
+            check_login()
+        }
+        
+        function update(input)  // payable function
+        {      
+            input = sent_val.input.value;
+            document.getElementById('loader').style.display = "block"
+            sendTransaction(myContract.methods.update(input).encodeABI()).then(res => {
+                console.log("Stus", res)
+                sent_val.input.value = ""
+                document.getElementById('loader').style.display = "none"
+                show();
+            })
+        }
+
+        function clear()  // payable function
+        {
+            document.getElementById('loader').style.display = "block"
+            sendTransaction(myContract.methods.clear().encodeABI()).then(res => {
+                console.log("Stus", res)
+                document.getElementById('loader').style.display = "none"
+                show();
+            })
+        }
+
+        function show()  // view/constant function
+        {
+            if(!myContract)
+            {
+                setWeb3().then(() => {
+                    myContract.methods.show().call((err, res) => {
+                        // console.log(res)
+                        sent_val.current_value.value = res;
+                    })
+                })
+                
+            }
+            else
+            {
+                myContract.methods.show().call((err, res) => {
+                    sent_val.current_value.value = res;
+                })
+            }
+        }
+    </script>
+</html>
