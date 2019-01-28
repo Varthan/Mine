@@ -67,61 +67,60 @@ var check_config = new Promise(function(resolve, reject) {
         resolve(true)
 })
 
-var sendTransaction = (method_name, methor_arg) => new Promise(function(resolve, reject) 
+var signTransaction = (method_type, method_name, methor_arg) => new Promise(function(resolve, reject) 
 {
     check_config.then(res => {
-        var tx={
-            to: contract_address,
-            data: null,
-            gas:550000
-        }
-        if(methor_arg)
-            tx.data = myContract.methods[method_name](methor_arg).encodeABI()
-        else
-            tx.data = myContract.methods[method_name]().encodeABI()
-
-        console.log(tx);
-
-        web3.eth.accounts.signTransaction(tx, localStorage.getItem('privatekey'), function(err,res){
-            if(err)
-                resolve({error: true, mes: err});
-
-            web3.eth.sendSignedTransaction(res.rawTransaction).on('transactionHash', txHash => {
-                console.log("tx-Hash", txHash); 
-            }).on('receipt',receipt => {
-                // console.log(receipt);
-                if(receipt["status"]== "0x1")
-                {
-                    console.log("Transaction Success", tx.data);
-                    resolve(true);
-                    // resolve({error: false, tx: txHash, receipt: receipt, mes: "Transaction Success"});
-                }
-                else
-                {
-                    console.log("Transaction Failed");
-                    resolve(true);
-                    // resolve({error: false, tx: txHash, receipt: receipt, mes: "Transaction Failed"});
-                }
-            }).catch(err =>{
-                console.error(err);
-                resolve({error: true, mes: err});
+        if(method_type == "payable")
+        {
+            var tx={
+                to: contract_address,
+                data: null,
+                gas:550000
+            }
+            if(methor_arg)
+                tx.data = myContract.methods[method_name](methor_arg).encodeABI()
+            else
+                tx.data = myContract.methods[method_name]().encodeABI()
+    
+            console.log(tx);
+    
+            web3.eth.accounts.signTransaction(tx, localStorage.getItem('privatekey'), function(err,res){
+                if(err)
+                    resolve({error: true, mes: err});
+    
+                web3.eth.sendSignedTransaction(res.rawTransaction).on('transactionHash', txHash => {
+                    console.log("tx-Hash", txHash); 
+                }).on('receipt',receipt => {
+                    // console.log(receipt);
+                    if(receipt["status"]== "0x1")
+                    {
+                        console.log("Transaction Success", tx.data);
+                        resolve(true);
+                        // resolve({error: false, tx: txHash, receipt: receipt, mes: "Transaction Success"});
+                    }
+                    else
+                    {
+                        console.log("Transaction Failed");
+                        resolve(true);
+                        // resolve({error: false, tx: txHash, receipt: receipt, mes: "Transaction Failed"});
+                    }
+                }).catch(err =>{
+                    console.error(err);
+                    resolve({error: true, mes: err});
+                });
             });
-        });
-    });
-});
-
-
-var callTransaction = (method_name, methor_arg) => new Promise(function(resolve, reject) 
-{
-    check_config.then(res => {
-        var contract_method;
-        if(methor_arg)
-            contract_method = myContract.methods[method_name](methor_arg)
+        }
         else
-            contract_method = myContract.methods[method_name]()
+        {
+            var contract_method;
+            if(methor_arg)
+                contract_method = myContract.methods[method_name](methor_arg)
+            else
+                contract_method = myContract.methods[method_name]()
 
-        contract_method.call((err, res) => {
-            resolve(res)
-        });
+            contract_method.call((err, res) => {
+                resolve(res)
+            });
+        }
     });
 });
