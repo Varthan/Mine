@@ -173,10 +173,11 @@
         }
         
         function update()  // payable function
-        {      
-            input = sent_val.input.value;
+        {
+            var args = []
+            args.push(sent_val.input.value)     // push all the arguments in args variable, which you can send to the blockchain
             document.getElementById('loader').style.display = "block"
-            signTransaction('payable', 'update', input).then(res => {
+            signTransaction('payable', 'update', args).then(res => {
                 console.log("Stus", res)
                 sent_val.input.value = ""
                 document.getElementById('loader').style.display = "none"

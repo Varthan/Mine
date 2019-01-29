@@ -1,54 +1,44 @@
 var web3;
 var myContract;
-var contract_address = "0x76a5b78ec66faebca2911e9e641a72fd51c647d8"
+var contract_address = "0xdfd3267056d0ada51d69a9bedd3792ee42575f0e"
 var contract_abi = [
-    {
-        "constant": false,
-        "inputs": [],
-        "name": "clear",
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": true,
-        "stateMutability": "payable",
-        "type": "function"
-    },
-    {
-        "constant": false,
-        "inputs": [
-            {
-                "name": "a",
-                "type": "uint256"
-            }
-        ],
-        "name": "update",
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "constant": true,
-        "inputs": [],
-        "name": "show",
-        "outputs": [
-            {
-                "name": "",
-                "type": "uint256"
-            }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function"
-    }
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "clear",
+		"outputs": [],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "a",
+				"type": "uint256"
+			}
+		],
+		"name": "update",
+		"outputs": [],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "show",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	}
 ]
 
 var importWeb3 = () => new Promise(function(resolve, reject) {
@@ -67,8 +57,9 @@ var check_config = new Promise(function(resolve, reject) {
         resolve(true)
 })
 
-var signTransaction = (method_type, method_name, methor_arg) => new Promise(function(resolve, reject) 
+var signTransaction = (method_type, method_name, method_arg) => new Promise(function(resolve, reject) 
 {
+    console.log(method_arg)
     check_config.then(res => {
         if(method_type == "payable")
         {
@@ -77,8 +68,8 @@ var signTransaction = (method_type, method_name, methor_arg) => new Promise(func
                 data: null,
                 gas:550000
             }
-            if(methor_arg)
-                tx.data = myContract.methods[method_name](methor_arg).encodeABI()
+            if(method_arg)
+                tx.data = myContract.methods[method_name].apply(null, method_arg).encodeABI()
             else
                 tx.data = myContract.methods[method_name]().encodeABI()
     
@@ -113,8 +104,8 @@ var signTransaction = (method_type, method_name, methor_arg) => new Promise(func
         else
         {
             var contract_method;
-            if(methor_arg)
-                contract_method = myContract.methods[method_name](methor_arg)
+            if(method_arg)
+                contract_method = myContract.methods[method_name].apply(null, method_arg)
             else
                 contract_method = myContract.methods[method_name]()
 
