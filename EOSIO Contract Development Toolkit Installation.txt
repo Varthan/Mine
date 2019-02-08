@@ -7,6 +7,8 @@ sudo apt install ./eosio.cdt-1.4.1.x86_64.deb
 IF ANY EROOR IN "sudo apt install ./eosio.cdt-1.4.1.x86_64.deb" USE THIS,
 sudo apt -f  install ./eosio.cdt-1.4.1.x86_64.deb
 
+Check "cmake" in your system --> cmake_minimum_required(VERSION 3.5)
+
 RUN THIS COMMEND FOR GENERATE .wasm AND .abi FILE
 eosio-cpp -abigen hello.cpp -o hello.wasm
 
